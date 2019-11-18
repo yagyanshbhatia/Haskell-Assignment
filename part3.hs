@@ -5,7 +5,7 @@ import Data.Maybe
 import System.IO.Unsafe
 
 allTeams = ["BS","CM","CH","CV","CS","DS","EE","HU","MA","ME","PH","ST"]
-newTeamList = []
+
 
 getRandomIndex :: Int -> Int
 getRandomIndex b = unsafePerformIO (getStdRandom (randomR (0, b)))
@@ -38,20 +38,25 @@ generateFixture n newTeamList =
         else putStrLn (team1 ++ " vs " ++ team2 ++ " " ++ (show date) ++ " " ++ " 19:30")
         generateFixture (n-1) newTeamList
 
--- fixture :: [Char] -> IO ()
--- fixture "all" = generateFixture 6 $ init $ generateNewTeamList 12 allTeams
--- fixture team1 = 
--- 	do
--- 		teamIndex = elemIndex team1 newTeamList
--- 		if teamIndex `rem` 2 == 0
--- 			then team2 = newTeamList !! (teamIndex+1)
--- 		else team2 = newTeamList !! (teamIndex-1)
--- 		date = (teamIndex/4) + 1
--- 		teamIndex = teamIndex - (teamIndex/4)*4
--- 		if teamIndex/2 == 0
--- 			then time = " 9:30"
--- 		else time = " 19:30"
--- 		putStrLn team1 ++ " vs " ++ team2 ++ " " ++ (show date) ++ " " ++ time
+newTeamList = init $ generateNewTeamList 12 allTeams
+
+fixture :: [Char] -> IO ()
+fixture "all" = generateFixture 6 newTeamList
+fixture team1 = 
+    do
+        let teamIndex = fromJust $ elemIndex team1 newTeamList
+        let time = if teamIndex `rem` 4 < 2
+            then " 9:30"
+            else " 19:30"
+        let date = if teamIndex < 4
+            then 1
+            else if teamIndex < 8
+                then 2
+                else 3
+        let team2 = if teamIndex `rem` 2 == 0
+            then newTeamList !! (teamIndex+1)
+            else newTeamList !! (teamIndex-1)
+        putStrLn (team1 ++ " vs " ++ team2 ++ " " ++ (show date) ++ " " ++ time)
 
 -- nextMatch ::
 
