@@ -58,7 +58,18 @@ fixture team1 =
             else newTeamList !! (teamIndex-1)
         putStrLn (team1 ++ " vs " ++ team2 ++ " " ++ (show date) ++ " " ++ time)
 
--- nextMatch ::
+nextMatch :: Int -> Float -> IO()
+nextMatch date time = 
+    do
+        let offset = if time < 9.31
+            then 0
+            else if time < 19.31
+                then 1
+                else 2
+        let teamIndex = (date-1)*4 + 2*offset
+        if teamIndex == 12
+            then putStrLn "No matches ahead!"
+            else fixture (newTeamList !! teamIndex)
 
 
 
