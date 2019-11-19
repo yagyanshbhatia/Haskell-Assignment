@@ -1,94 +1,129 @@
 import Data.Array
+import Data.List
+
+{-
+Utility function to read words in Int type. 
+-}
+parseIntList :: String -> [Int]
+parseIntList s = [read x :: Int | x <- words s]
+
+
+{-
+Just an example matrix walkthrough,
+To understand by example working of each method.
+-}
+-- [[1, 0, 0, 2],
+--  [0, 0, 0, 3],
+--  [0, 4, 0, 0],
+--  [0, 0, 0, 0]]
+
+
+-- [((0,0),1),((0,1),0),((0,2),0),((0,3),2),
+--  ((1,0),0),((1,1),0),((1,2),0),((1,3),3),
+--  ((2,0),0),((2,1),4),((2,2),0),((2,3),0),
+--  ((3,0),0),((3,1),0),((3,2),0),((3,3),0)]
+
+{-
+Basically create an array (For easy access) using sudokuAssocs
+-}
+sudokuBoard :: [[Int]]-> (Array (Int, Int) Int)
+sudokuBoard x = array ((0, 0), (3, 3)) $ concatMap attatchRows $ zip [0,1,2,3] x
+  where
+    attatchRows :: (Int, [Int]) -> [((Int, Int), Int)]
+    attatchRows (r, m) = attatchCols r $ zip [0,1,2,3] m
+
+    attatchCols :: Int -> [(Int, Int)] -> [((Int, Int), Int)]
+    attatchCols r c = map (\(c, m) -> ((r, c), m)) c
+
+{-
+The Main Function,
+Computes all the solutinons possible
+returns a list of accepted solutions.
+-}
+solve :: (Array (Int, Int) Int) -> [(Array (Int, Int) Int)]
+solve b = solve' [(r, c) | c <- [0,1,2,3], r <- [0,1,2,3], b ! (r, c) == 0] b
+  where
+    solve' :: [(Int,Int)] -> (Array (Int, Int) Int) -> [(Array (Int, Int) Int)]
+    solve' []     b = [b]
+    solve' (x:xs) b = concatMap (solve' xs) candidateBoards
+      where
+        candidateInts  = [m | m <- [1,2,3,4], try m x b]
+        candidateBoards = map (\m -> b // [(x, m)]) candidateInts
+
+{-
+try a mark M at a position
+if same mark exists in that row, return false
+if same mark exists in that col, return false
+if same mark exists in that 2x2 subgrix, return false
+Other wise return true.
+-}
+try :: Int -> (Int,Int) -> (Array (Int, Int) Int) -> Bool
+try m (r, c) b = tryRow && tryCol && trySubgrid
+  where
+    tryRow = notElem m usedRowElems
+    tryCol = notElem m usedColElems
+    trySubgrid = notElem m usedSubgridElems
+    usedRowElems = [b ! x | x <- range((r, 0), (r, 3))]
+    usedColElems = [b ! x | x <- range((0, c), (3, c))]
+    usedSubgridElems = [b ! loc | loc <- locations]
+      where
+        row' = (r `div` 2) * 2
+        col' = (c `div` 2) * 2
+        locations = range((row', col'), (row' + 1, col' + 1))
+
+
+{-
+[] : returns Nothing
+[1,2,3] : returns 1
+-}
+safetyHelper :: [a] -> Maybe a
+safetyHelper []     = Nothing
+safetyHelper (x:xs) = Just x
+
+{-
+Prints in a format that is more readable. 
+If no solution is found, print "No solution"
+-}
+printSudoku :: Maybe (Array (Int, Int) Int) -> IO ()
+printSudoku Nothing  = putStrLn "No solution"
+printSudoku (Just b) = mapM_ putStrLn [show $ [b ! x | x <- range((row, 0), (row, 3))] | row <- [0..3]]
+
 
 main = do
-    let solution = solve puzzleBoard
-    printBoard solution
+    a1 <- getLine
+    let intlist1 = parseIntList a1
+    a2 <- getLine
+    let intlist2 = parseIntList a2
+    a3 <- getLine
+    let intlist3 = parseIntList a3
+    a4 <- getLine
+    let intlist4 = parseIntList a4
+    
+    -- [[1, 0, 0, 2],
+    --  [0, 0, 0, 3],
+    --  [0, 4, 0, 0],
+    --  [0, 0, 0, 0]]
+    let inListFinal = [intlist1, intlist2, intlist3, intlist4]
+    
+    let l1 = length intlist1
+    let l2 = length intlist2
+    let l3 = length intlist3
+    let l4 = length intlist4
 
--- The marks on the board are represented by Ints in the range 0..9, where 0 represents "empty".
-type Mark = Int
+    let min1 = minimum intlist1
+    let max1 = maximum intlist1
+    let min2 = minimum intlist2
+    let max2 = maximum intlist2
+    let min3 = minimum intlist3
+    let max3 = maximum intlist3
+    let min4 = minimum intlist4
+    let max4 = maximum intlist4
 
--- A square is identified by a (row, column) pair
-type Location = (Int, Int)
 
--- A sudoku board is a 9x9 matrix of marks
-type Board = Array Location Mark
-
--- The sudoku board to be solved
-puzzleBoard :: Board
-puzzleBoard = array ((0, 0), (3, 3)) $ puzzleAssocs examplePuzzle
-
--- Example puzzle from http://en.wikipedia.org/wiki/Sudoku
-examplePuzzle :: [[Mark]]
-examplePuzzle = [[1, 0, 0, 2],
-                 [0, 0, 0, 3],
-
-                 [0, 4, 0, 0],
-                 [0, 0, 0, 0]]
-
--- Return first solution, or Nothing if no solutions found
-solve :: Board -> Maybe Board
-solve = headOrNothing . solutions
-
--- Return all solutions
-solutions :: Board -> [Board]
-solutions b = solutions' (emptyLocations b) b
-  where
-    -- Given list of empty locations on a board, pick an empty location,
-    -- determine which marks can be put in that location, and then
-    -- recursively find all solutions for that set of marks.
-    solutions' :: [Location] -> Board -> [Board]
-    solutions' []     b = [b]
-    solutions' (x:xs) b = concatMap (solutions' xs) candidateBoards
-      where
-        candidateMarks  = [m | m <- [1..4], isPossibleMark m x b]
-        candidateBoards = map (\m -> copyWithMark m x b) candidateMarks
-
--- Return list of locations where value is 0
-emptyLocations :: Board -> [Location]
-emptyLocations b = [(row, col) | row <- [0..3], col <- [0..3], b ! (row, col) == 0]
-
--- Determine whether the specified mark can be placed at specified position
-isPossibleMark :: Mark -> Location -> Board -> Bool
-isPossibleMark m (row, col) b = notInRow && notInColumn && notInBox
-  where
-    notInRow    = notElem m $ b `marksInRow` row
-    notInColumn = notElem m $ b `marksInColumn` col
-    notInBox    = notElem m $ b `marksIn3x3Box` (row, col)
-
--- Return board with specified value in specified Location
-copyWithMark :: Mark -> Location -> Board -> Board
-copyWithMark mark (row, col) b = b // [((row, col), mark)]
-
--- Return the marks in the specified row
-marksInRow :: Board -> Int -> [Mark]
-b `marksInRow` row = [b ! loc | loc <- range((row, 0), (row, 3))]
-
--- Return the marks in the specified column
-marksInColumn ::  Board -> Int -> [Mark]
-b `marksInColumn` col = [b ! loc | loc <- range((0, col), (3, col))]
-
--- Return the marks in the 3x3 box that includes the specified Location
-marksIn3x3Box :: Board -> Location -> [Mark]
-b `marksIn3x3Box` (row, col) = [b ! loc | loc <- locations]
-  where
-    row' = (row `div` 2) * 2
-    col' = (col `div` 2) * 2
-    locations = range((row', col'), (row' + 1, col' + 1))
-
--- Convert a list of rows of marks (as in examplePuzzle above) to a list of array associations
-puzzleAssocs :: [[Mark]] -> [(Location, Mark)]
-puzzleAssocs = concatMap rowAssocs . zip [0..3]
-  where
-    rowAssocs :: (Int, [Mark]) -> [((Int, Int), Mark)]
-    rowAssocs (row, marks) = colAssocs row $ zip [0..3] marks
-
-    colAssocs :: Int -> [(Int, Mark)] -> [((Int, Int), Mark)]
-    colAssocs row cols = map (\(col, m) -> ((row, col), m)) cols
-
-headOrNothing :: [a] -> Maybe a
-headOrNothing []     = Nothing
-headOrNothing (x:xs) = Just x
-
-printBoard :: Maybe Board -> IO ()
-printBoard Nothing  = putStrLn "No solution"
-printBoard (Just b) = mapM_ putStrLn [show $ b `marksInRow` row | row <- [0..3]]
+    if ((l1 /= 4) || (l2 /= 4) || (l3 /= 4) || (l4 /= 4))
+        then putStrLn "Input Format Wrong"
+    else if (not ((min1 >= 0 && max1 <= 4) && (min2 >= 0 && max2 <= 4) && (min3 >= 0 && max3 <= 4) && (min4 >= 0 && max4 <= 4)))
+        then putStrLn "Input Entry Wrong"
+    else do
+        let solution = safetyHelper.solve $ sudokuBoard inListFinal
+        printSudoku solution
