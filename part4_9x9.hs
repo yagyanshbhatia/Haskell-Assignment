@@ -147,7 +147,7 @@ main = do
 
     if ((l1 /= 9) || (l2 /= 9) || (l3 /= 9) || (l4 /= 9) || (l5 /= 9) || (l6 /= 9) || (l7 /= 9) || (l8 /= 9) || (l9 /= 9))
         then putStrLn "Input Format Wrong"
-    else if (not ((min1 >= 0 && max1 <= 4) && (min2 >= 0 && max2 <= 4) && (min3 >= 0 && max3 <= 4) && (min4 >= 0 && max4 <= 4) && (min5 >= 0 && max5 <= 4) && (min6 >= 0 && max6 <= 4) && (min7 >= 0 && max7 <= 4) && (min8 >= 0 && max8 <= 4) && (min9 >= 0 && max9 <= 4)))
+    else if (not ((min1 >= 0 && max1 <= 9) && (min2 >= 0 && max2 <= 9) && (min3 >= 0 && max3 <= 9) && (min4 >= 0 && max4 <= 9) && (min5 >= 0 && max5 <= 9) && (min6 >= 0 && max6 <= 9) && (min7 >= 0 && max7 <= 9) && (min8 >= 0 && max8 <= 9) && (min9 >= 0 && max9 <= 9)))
         then putStrLn "Input Entry Wrong"
     else do
         let solution = safetyHelper.solve $ sudokuBoard inListFinal
