@@ -4,17 +4,20 @@ import System.Random
 import Data.Maybe
 import System.IO.Unsafe
 
+-- Initial Team List
 allTeams = ["BS","CM","CH","CV","CS","DS","EE","HU","MA","ME","PH","ST"]
 
-
+-- Function to generate a random number in a given range
 getRandomIndex :: Int -> Int
 getRandomIndex b = unsafePerformIO (getStdRandom (randomR (0, b)))
 
+-- Function to remove an element from list
 removeItem :: String -> [String] -> [String]
 removeItem _ []                 = []
 removeItem x (y:ys) | x == y    = ys
                     | otherwise = y : removeItem x ys
 
+-- Function to randomly shuffle team list
 generateNewTeamList :: Int -> [String] -> [String]
 generateNewTeamList 0 _ = return [ ]
 generateNewTeamList n allTeams = teamId : generateNewTeamList (n-1) y
@@ -23,7 +26,7 @@ generateNewTeamList n allTeams = teamId : generateNewTeamList (n-1) y
         y = removeItem teamId allTeams
         randomIndex = getRandomIndex(n-1)
 
--- take care of the case when allteams list is odd
+-- Function to generate complete fixture from a given draw
 generateFixture :: Int -> [[Char]] -> IO ()
 generateFixture 0 _ = return ()
 generateFixture n newTeamList = 
@@ -37,26 +40,33 @@ generateFixture n newTeamList =
         else putStrLn (team1 ++ " vs " ++ team2 ++ " " ++ (show date) ++ " " ++ " 19:30")
         generateFixture (n-1) newTeamList
 
+-- New team list after draw
 newTeamList = init $ generateNewTeamList 12 allTeams
 
+-- Function to print particular or all fixtures
 fixture :: [Char] -> IO ()
 fixture "all" = generateFixture 6 newTeamList
 fixture team1 = 
     do
-        let teamIndex = fromJust $ elemIndex team1 newTeamList
-        let time = if teamIndex `rem` 4 < 2
-            then " 9:30"
-            else " 19:30"
-        let date = if teamIndex < 4
-            then 1
-            else if teamIndex < 8
-                then 2
-                else 3
-        let team2 = if teamIndex `rem` 2 == 0
-            then newTeamList !! (teamIndex+1)
-            else newTeamList !! (teamIndex-1)
-        putStrLn (team1 ++ " vs " ++ team2 ++ " " ++ (show date) ++ " " ++ time)
+        let teamIndex = fromMaybe (-1) $ elemIndex team1 newTeamList
+        if teamIndex == -1
+            then putStrLn "Team does not exist. Enter valid team name."
+        else do 
+            let time = if teamIndex `rem` 4 < 2
+                then " 9:30"
+                else " 19:30"
+            let date = if teamIndex < 4
+                then 1
+                else if teamIndex < 8
+                    then 2
+                    else 3
+            let team2 = if teamIndex `rem` 2 == 0
+                then newTeamList !! (teamIndex+1)
+                else newTeamList !! (teamIndex-1)
+            putStrLn (team1 ++ " vs " ++ team2 ++ " " ++ (show date) ++ " " ++ time)
 
+-- Function to find next match from the fixture
+-- if 9:30/19:30, then match at 9:30/19:30 will be displayed
 nextMatch :: Int -> Float -> IO()
 nextMatch date time = 
     do
