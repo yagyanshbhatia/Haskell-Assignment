@@ -10,8 +10,6 @@ allTeams = ["BS","CM","CH","CV","CS","DS","EE","HU","MA","ME","PH","ST"]
 getRandomIndex :: Int -> Int
 getRandomIndex b = unsafePerformIO (getStdRandom (randomR (0, b)))
 
--- elemIndex :: Eq a => a -> [a] -> Maybe Int
-
 removeItem :: String -> [String] -> [String]
 removeItem _ []                 = []
 removeItem x (y:ys) | x == y    = ys
@@ -25,6 +23,7 @@ generateNewTeamList n allTeams = teamId : generateNewTeamList (n-1) y
         y = removeItem teamId allTeams
         randomIndex = getRandomIndex(n-1)
 
+-- take care of the case when allteams list is odd
 generateFixture :: Int -> [[Char]] -> IO ()
 generateFixture 0 _ = return ()
 generateFixture n newTeamList = 
