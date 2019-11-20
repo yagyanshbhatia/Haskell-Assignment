@@ -9,6 +9,21 @@ parseIntList s = [read x :: Int | x <- words s]
 
 
 {-
+Utility function to count number of occurences of an element in a list. 
+-}
+countElems :: Int -> [Int] -> Int
+countElems _ []     = 0
+countElems n (x:xs) = fromEnum (n == x) + countElems n xs
+
+
+{-
+Utility function to count number of occurences of an element in a list. 
+-}
+totalCount :: Int -> [Int] -> [Int] -> [Int] -> [Int] -> [Int] -> [Int] -> [Int] -> [Int] -> [Int] -> Int
+totalCount a l1 l2 l3 l4 l5 l6 l7 l8 l9 = countElems a l1 + countElems a l2 + countElems a l3 + countElems a l4 + countElems a l5 + countElems a l6 + countElems a l7 + countElems a l8 + countElems a l9
+
+
+{-
 Just an example matrix walkthrough,
 To understand by example working of each method.
 -}
@@ -145,10 +160,23 @@ main = do
     let max9 = maximum intlist9
 
 
+    let count1 = totalCount 1 intlist1 intlist2 intlist3 intlist4 intlist5 intlist6 intlist7 intlist8 intlist9
+    let count2 = totalCount 2 intlist1 intlist2 intlist3 intlist4 intlist5 intlist6 intlist7 intlist8 intlist9
+    let count3 = totalCount 3 intlist1 intlist2 intlist3 intlist4 intlist5 intlist6 intlist7 intlist8 intlist9
+    let count4 = totalCount 4 intlist1 intlist2 intlist3 intlist4 intlist5 intlist6 intlist7 intlist8 intlist9
+    let count5 = totalCount 5 intlist1 intlist2 intlist3 intlist4 intlist5 intlist6 intlist7 intlist8 intlist9
+    let count6 = totalCount 6 intlist1 intlist2 intlist3 intlist4 intlist5 intlist6 intlist7 intlist8 intlist9
+    let count7 = totalCount 7 intlist1 intlist2 intlist3 intlist4 intlist5 intlist6 intlist7 intlist8 intlist9
+    let count8 = totalCount 8 intlist1 intlist2 intlist3 intlist4 intlist5 intlist6 intlist7 intlist8 intlist9
+    let count9 = totalCount 9 intlist1 intlist2 intlist3 intlist4 intlist5 intlist6 intlist7 intlist8 intlist9
+
+
     if ((l1 /= 9) || (l2 /= 9) || (l3 /= 9) || (l4 /= 9) || (l5 /= 9) || (l6 /= 9) || (l7 /= 9) || (l8 /= 9) || (l9 /= 9))
-        then putStrLn "Input Format Wrong"
+        then putStrLn "Length of input lists should be exactly 9."
     else if (not ((min1 >= 0 && max1 <= 9) && (min2 >= 0 && max2 <= 9) && (min3 >= 0 && max3 <= 9) && (min4 >= 0 && max4 <= 9) && (min5 >= 0 && max5 <= 9) && (min6 >= 0 && max6 <= 9) && (min7 >= 0 && max7 <= 9) && (min8 >= 0 && max8 <= 9) && (min9 >= 0 && max9 <= 9)))
-        then putStrLn "Input Entry Wrong"
+        then putStrLn "Each non-zero entry in input should be between 1 to 9."
+    else if (not (count1 == 1 && count2 == 1 && count3 == 1 && count4 == 1 && count5 == 1 && count6 == 1 && count7 == 1 && count8 == 1 && count9 == 1))
+        then putStrLn "Each non-zero entry in input should occur exactly once."
     else do
         let solution = safetyHelper.solve $ sudokuBoard inListFinal
         printSudoku solution

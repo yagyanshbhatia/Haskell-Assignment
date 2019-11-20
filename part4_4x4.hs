@@ -9,6 +9,21 @@ parseIntList s = [read x :: Int | x <- words s]
 
 
 {-
+Utility function to count number of occurences of an element in a list. 
+-}
+countElems :: Int -> [Int] -> Int
+countElems _ []     = 0
+countElems n (x:xs) = fromEnum (n == x) + countElems n xs
+
+
+{-
+Utility function to count number of occurences of an element in a list. 
+-}
+totalCount :: Int -> [Int] -> [Int] -> [Int] -> [Int] -> Int
+totalCount a w x y z = countElems a w + countElems a x + countElems a y + countElems a z
+
+
+{-
 Just an example matrix walkthrough,
 To understand by example working of each method.
 -}
@@ -17,11 +32,11 @@ To understand by example working of each method.
 --  [0, 4, 0, 0],
 --  [0, 0, 0, 0]]
 
-
 -- [((0,0),1),((0,1),0),((0,2),0),((0,3),2),
 --  ((1,0),0),((1,1),0),((1,2),0),((1,3),3),
 --  ((2,0),0),((2,1),4),((2,2),0),((2,3),0),
 --  ((3,0),0),((3,1),0),((3,2),0),((3,3),0)]
+
 
 {-
 Basically create an array (For easy access) using sudokuAssocs
@@ -35,10 +50,9 @@ sudokuBoard x = array ((0, 0), (3, 3)) $ concatMap attatchRows $ zip [0,1,2,3] x
     attatchCols :: Int -> [(Int, Int)] -> [((Int, Int), Int)]
     attatchCols r c = map (\(c, m) -> ((r, c), m)) c
 
+
 {-
-The Main Function,
-Computes all the solutinons possible
-returns a list of accepted solutions.
+The Main Function,Computes all the solutinons possible returns a list of accepted solutions.
 -}
 solve :: (Array (Int, Int) Int) -> [(Array (Int, Int) Int)]
 solve b = solve' [(r, c) | c <- [0,1,2,3], r <- [0,1,2,3], b ! (r, c) == 0] b
@@ -50,8 +64,9 @@ solve b = solve' [(r, c) | c <- [0,1,2,3], r <- [0,1,2,3], b ! (r, c) == 0] b
         candidateInts  = [m | m <- [1,2,3,4], try m x b]
         candidateBoards = map (\m -> b // [(x, m)]) candidateInts
 
+
 {-
-try a mark M at a position
+try a mark M at a position 
 if same mark exists in that row, return false
 if same mark exists in that col, return false
 if same mark exists in that 2x2 subgrix, return false
@@ -79,6 +94,7 @@ try m (r, c) b = tryRow && tryCol && trySubgrid
 safetyHelper :: [a] -> Maybe a
 safetyHelper []     = Nothing
 safetyHelper (x:xs) = Just x
+
 
 {-
 Prints in a format that is more readable. 
@@ -119,11 +135,17 @@ main = do
     let min4 = minimum intlist4
     let max4 = maximum intlist4
 
+    let count1 = totalCount 1 intlist1 intlist2 intlist3 intlist4
+    let count2 = totalCount 2 intlist1 intlist2 intlist3 intlist4
+    let count3 = totalCount 3 intlist1 intlist2 intlist3 intlist4
+    let count4 = totalCount 4 intlist1 intlist2 intlist3 intlist4
 
     if ((l1 /= 4) || (l2 /= 4) || (l3 /= 4) || (l4 /= 4))
-        then putStrLn "Input Format Wrong"
+        then putStrLn "Length of input lists should be exactly 4."
     else if (not ((min1 >= 0 && max1 <= 4) && (min2 >= 0 && max2 <= 4) && (min3 >= 0 && max3 <= 4) && (min4 >= 0 && max4 <= 4)))
-        then putStrLn "Input Entry Wrong"
+        then putStrLn "Each non-zero entry in input should be between 1 to 4."
+    else if (not (count1 == 1 && count2 == 1 && count3 == 1 && count4 == 1))
+    	then putStrLn "Each non-zero entry in input should occur exactly once."
     else do
         let solution = safetyHelper.solve $ sudokuBoard inListFinal
         printSudoku solution
